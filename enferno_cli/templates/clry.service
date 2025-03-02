@@ -1,0 +1,22 @@
+[Unit]
+Description=Celery Service for Enferno
+After=network.target redis-server.service
+
+[Service]
+User={{ user_name }}
+Group={{ user_name }}
+WorkingDirectory=/home/{{ user_name }}/{{ server_hostname }}
+Environment="PATH=/home/{{ user_name }}/{{ server_hostname }}/env/bin"
+Environment="FLASK_DEBUG=0"
+ExecStart=/home/{{ user_name }}/{{ server_hostname }}/env/bin/celery -A enferno.tasks -c 4 worker -B
+
+# Restart service after 10 seconds if service crashes
+# Restart=on-failure
+# RestartSec=10
+
+# Restart configuration
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target 

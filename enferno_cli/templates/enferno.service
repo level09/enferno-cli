@@ -1,0 +1,36 @@
+[Unit]
+Description=uWSGI instance for Flask Enferno Application
+After=network.target postgresql.service redis-server.service
+
+[Service]
+User={{ user_name }}
+Group={{ user_name }}
+WorkingDirectory=/home/{{ user_name }}/{{ server_hostname }}
+Environment="FLASK_DEBUG=0"
+ExecStart=/home/{{ user_name }}/{{ server_hostname }}/env/bin/uwsgi \
+    --master \
+    --enable-threads \
+    --threads 2 \
+    --processes 4 \
+    --http 127.0.0.1:{{ python_port }} \
+    --worker-reload-mercy 30 \
+    --reload-mercy 30 \
+    -w run:app \
+    --home /home/{{ user_name }}/{{ server_hostname }}/env
+
+Restart=always
+RestartSec=1
+StartLimitIntervalSec=0
+
+Type=notify
+KillMode=mixed
+KillSignal=SIGQUIT
+TimeoutStopSec=5
+TimeoutStartSec=30
+
+StandardOutput=journal
+StandardError=journal
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target
