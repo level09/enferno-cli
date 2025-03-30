@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "enferno_cli"
-version = "0.1.0"
+version = "0.2.0"
 description = "A Python tool for setting up Ubuntu servers with the Enferno framework"
 readme = "README.md"
 requires-python = ">=3.9"
