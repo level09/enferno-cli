@@ -75,9 +75,27 @@ class EnfernoTask(Task):
             if stdout:
                 console.print(stdout)
         
+        # Install uv for the application user using curl (the officially recommended method)
+        console.print(f"[cyan]Installing uv for user {self.config.user_name}...")
+        # Use the official installer script as recommended in the Enferno setup.sh error message
+        install_uv_cmd = f"sudo -u {self.config.user_name} bash -c 'cd {app_dir} && curl -LsSf https://astral.sh/uv/install.sh | sh'"
+        exit_code_uv, stdout_uv, stderr_uv = self.ssh.execute(install_uv_cmd, sudo=True)
+        
+        if exit_code_uv != 0:
+            console.print(f"[bold red]Failed to install uv for user {self.config.user_name}[/]")
+            if stderr_uv:
+                console.print(f"[red]UV installation error: {stderr_uv}[/]")
+            return False
+        else:
+            console.print(f"[green]Successfully installed uv for user {self.config.user_name}[/]")
+            if stdout_uv:
+                console.print(stdout_uv)
+        
         # Run setup script - using a proper shell command with cd and capturing output
-        console.print("[cyan]Running Enferno setup script...[/]")
-        setup_cmd = f"sudo -u {self.config.user_name} bash -c 'cd {app_dir} && ./setup.sh'"
+        console.print("[cyan]Running Enferno setup script...")
+        
+        # Use a simple, one-line command that sources profile to ensure PATH is updated
+        setup_cmd = f"sudo -u {self.config.user_name} bash -c 'cd {app_dir} && source ~/.profile && source ~/.bashrc 2>/dev/null || true && ./setup.sh'"
         exit_code, stdout, stderr = self.ssh.execute(setup_cmd, sudo=True)
         
         # Display the output
@@ -103,21 +121,22 @@ class EnfernoTask(Task):
             console.print("[cyan]PostgreSQL is not enabled. Enferno will use SQLite by default.[/]")
         
         # Run flask create-db command to initialize the database
-        console.print("[cyan]Initializing database with flask create-db...[/]")
+        console.print("[cyan]Initializing database with flask create-db...")
         
-        create_db_cmd = f"sudo -u {self.config.user_name} bash -c 'cd {app_dir} && source env/bin/activate && flask create-db'"
+        # Use a simple one-line command that sources profile and activates the virtual environment
+        create_db_cmd = f"sudo -u {self.config.user_name} bash -c 'cd {app_dir} && source ~/.profile && source ~/.bashrc 2>/dev/null || true && source .venv/bin/activate && flask create-db'"
         exit_code, stdout, stderr = self.ssh.execute(create_db_cmd, sudo=True)
         if exit_code != 0:
             console.print(f"[yellow]Warning: Failed to run flask create-db command. Error: {stderr}[/]")
-            console.print("[yellow]Attempting alternative method to initialize the database...[/]")
+            console.print("[yellow]Attempting alternative method to initialize the database...")
             
-            # Try an alternative approach - sometimes the command needs to be run from a specific directory
-            alt_cmd = f"sudo -u {self.config.user_name} bash -c 'cd {app_dir} && source env/bin/activate && FLASK_APP=run.py flask create-db'"
+            # Alternative approach with FLASK_APP explicitly set
+            alt_cmd = f"sudo -u {self.config.user_name} bash -c 'cd {app_dir} && source ~/.profile && source ~/.bashrc 2>/dev/null || true && source .venv/bin/activate && FLASK_APP=run.py flask create-db'"
             alt_exit_code, alt_stdout, alt_stderr = self.ssh.execute(alt_cmd, sudo=True)
             if alt_exit_code != 0:
                 console.print(f"[yellow]Alternative method also failed. Error: {alt_stderr}[/]")
                 console.print("[yellow]You may need to initialize the database manually after setup:[/]")
-                console.print(f"[bold]cd {app_dir} && source env/bin/activate && flask create-db[/]")
+                console.print(f"[bold]cd {app_dir} && source .venv/bin/activate && flask create-db[/]")
                 # Continue anyway, as this might not be critical
             else:
                 console.print("[green]Successfully initialized database with alternative method[/]")

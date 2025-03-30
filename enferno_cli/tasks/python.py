@@ -108,7 +108,7 @@ class PythonTask(Task):
             console.print(f"[green]Successfully installed pip: {stdout.strip()}[/]")
         
         # Make the installed Python version the default python3
-        console.print(f"[cyan]Setting Python {python_version} as the default python3...[/]")
+        console.print(f"[cyan]Setting Python {python_version} as the default python3...")
         
         # Use update-alternatives to set the installed Python as the default
         python_bin = f"python3.{python_version.split('.')[-1]}"

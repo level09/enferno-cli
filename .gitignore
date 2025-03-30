@@ -65,3 +65,6 @@ venv.bak/
 *.log
 *.pem
 *.key 
+
+# other
+.DS_Store

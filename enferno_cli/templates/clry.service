@@ -6,9 +6,9 @@ After=network.target redis-server.service
 User={{ user_name }}
 Group={{ user_name }}
 WorkingDirectory=/home/{{ user_name }}/{{ server_hostname }}
-Environment="PATH=/home/{{ user_name }}/{{ server_hostname }}/env/bin"
+Environment="PATH=/home/{{ user_name }}/{{ server_hostname }}/.venv/bin"
 Environment="FLASK_DEBUG=0"
-ExecStart=/home/{{ user_name }}/{{ server_hostname }}/env/bin/celery -A enferno.tasks -c 4 worker -B
+ExecStart=/home/{{ user_name }}/{{ server_hostname }}/.venv/bin/celery -A enferno.tasks -c 4 worker -B
 
 # Restart service after 10 seconds if service crashes
 # Restart=on-failure
